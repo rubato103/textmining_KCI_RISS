@@ -1,0 +1,49 @@
+Package: textminingKCIRISS
+Title: Text Mining Korean Academic Data using R
+Version: 1.1.0
+Date: 2025-01-02
+Authors@R:
+    person("Yeondong", "Yang", , "rubato103@dodaseo.cc", role = c("aut", "cre"),
+           comment = c(ORCID = ""))
+Description: An integrated pipeline for morphological analysis, N-gram extraction,
+    and topic modeling of Korean academic paper data from KCI (Korea Citation Index)
+    and RISS (Research Information Sharing Service). Provides automated workflow
+    with Kiwipiepy morphological analyzer, compound noun dictionary management,
+    and STM (Structural Topic Model) for temporal analysis.
+License: file LICENSE
+URL: https://github.com/rubato103/textmining_KCI_RISS
+BugReports: https://github.com/rubato103/textmining_KCI_RISS/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends:
+    R (>= 4.5.0)
+Imports:
+    readxl,
+    dplyr,
+    tidyr,
+    stringr,
+    reticulate,
+    quanteda,
+    stm,
+    tm,
+    SnowballC,
+    tidytext,
+    ggplot2,
+    wordcloud,
+    wordcloud2,
+    RColorBrewer,
+    htmlwidgets,
+    parallel,
+    furrr,
+    digest,
+    jsonlite
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+SystemRequirements:
+    Python (>= 3.7),
+    kiwipiepy (Python package)

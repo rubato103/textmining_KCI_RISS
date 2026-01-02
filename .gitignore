@@ -50,6 +50,11 @@ claude.md
 # RStudio
 *.Rproj
 
+# renv (if used)
+renv/library/
+renv/staging/
+renv/.gitignore
+
 # ========== 로그 파일 ==========
 *.log
 
