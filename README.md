@@ -137,7 +137,6 @@ source("scripts/05_stm_topic_modeling.R")
 - **KCI**: 고유 논문 ID 기반
 - **RISS**: 해시 기반 고유 ID 자동 생성
 - **동일한 파이프라인**으로 두 데이터 모두 처리
-- 
 
 ### 지능형 사전 관리
 
