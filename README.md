@@ -3,7 +3,7 @@
 [![License: Academic and Educational Use](https://img.shields.io/badge/License-Academic%20%26%20Educational%20Use-blue.svg)](LICENSE)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS/commits/main)
 [![GitHub repo size](https://img.shields.io/github/repo-size/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS)
-[![R-CMD-check](https://github.com/rubato103/textmining_KCI_RISS/workflows/R%20Package%20Check/badge.svg)](https://github.com/rubato103/textmining_KCI_RISS/actions)
+[![R Scripts Check](https://github.com/rubato103/textmining_KCI_RISS/workflows/R%20Scripts%20Check/badge.svg)](https://github.com/rubato103/textmining_KCI_RISS/actions)
 
 한국어 학술 논문 데이터를 대상으로 한 형태소 분석, N그램 추출, 토픽 모델링 통합 파이프라인
 
@@ -256,7 +256,7 @@ Yang, Y. (2025). Text Mining of Korean Academic Data using R. GitHub Repository.
 [![License: Academic and Educational Use](https://img.shields.io/badge/License-Academic%20%26%20Educational%20Use-blue.svg)](LICENSE)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS/commits/main)
 [![GitHub repo size](https://img.shields.io/github/repo-size/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS)
-[![R-CMD-check](https://github.com/rubato103/textmining_KCI_RISS/workflows/R%20Package%20Check/badge.svg)](https://github.com/rubato103/textmining_KCI_RISS/actions)
+[![R Scripts Check](https://github.com/rubato103/textmining_KCI_RISS/workflows/R%20Scripts%20Check/badge.svg)](https://github.com/rubato103/textmining_KCI_RISS/actions)
 
 An integrated pipeline for morphological analysis, N-gram extraction, and topic modeling of Korean academic paper data.
 
