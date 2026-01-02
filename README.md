@@ -228,3 +228,237 @@ Yang, Y. (2025). Text Mining of Korean Academic Data using R. GitHub Repository.
 ### 로그 확인
 
 분석 과정의 상세 로그는 `reports/` 폴더의 각 단계별 보고서에서 확인 가능합니다.
+
+---
+
+# Text Mining Korean Academic Data using R
+
+[한국어 버전 보기](#r을-이용한-한국어-학술데이터-텍스트마이닝) | **English Version**
+
+[![License: Academic and Educational Use](https://img.shields.io/badge/License-Academic%20%26%20Educational%20Use-blue.svg)](LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/rubato103/textmining_KCI_RISS.svg)](https://github.com/rubato103/textmining_KCI_RISS)
+
+An integrated pipeline for morphological analysis, N-gram extraction, and topic modeling of Korean academic paper data.
+
+## Project Overview
+
+### Key Features
+
+- **Multi-source Data Support**: Automatic integration of KCI and RISS Excel data
+- **High-Performance Morphological Analysis**: Parallel processing with Kiwipiepy and CoNg model
+- **Smart Dictionary Optimization**: Automatic compound noun recommendations based on N-gram analysis
+- **STM Topic Modeling**: Time-series and categorical analysis with metadata
+- **Fully Automated**: One-click execution with interactive interface
+
+### Tech Stack
+
+- **Language**: R 4.5.1 or higher
+- **Morphological Analyzer**: [Kiwipiepy](https://github.com/bab2min/kiwipiepy), CoNg model
+- **Topic Modeling**: STM (Structural Topic Model)
+- **Parallel Processing**: R parallel package
+- **Visualization**: ggplot2, wordcloud
+
+## Workflow
+
+```mermaid
+graph LR;
+    A("Excel Data Input<br>(KCI, RISS)") --> B("Data Loading & Standardization<br>(Script.1)");
+    B --> C("Morphological Analysis<br>(Script.2)");
+    C --> D("N-gram Analysis<br>(Script.3-1)");
+    D --> I("LLM-assisted Review<br>(Script.3-2)");
+    I --"User Review & Refinement"--> E("User Dictionary Creation<br>(Script.3-3)");
+     %% Loop for iterative refinement (from E to C)
+    E --> C
+    C --> F("DTM Creation<br>(Script.4)");
+    F -- "Synonym & Stopword Processing" --> G("STM Topic Modeling<br>(Script.5)");
+    G --> H("Analysis Reports & Results");
+
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+## Project Structure
+
+```
+textming_KCI_RISS/
+├── scripts/                 # All R scripts
+├── data/
+│   ├── raw_data/            # Raw Excel data (excluded from Git)
+│   ├── processed/           # Processed results (excluded from Git)
+│   ├── dictionaries/        # User dictionaries (excluded from Git)
+│   └── config/              # Configuration files (version controlled)
+│       └── compound_mappings.csv  # Compound word normalization mappings
+├── reports/                 # Analysis reports (excluded from Git)
+├── CITATION.md              # Citation guide
+├── LICENSE                  # License information
+└── cong-base/              # CoNg model (excluded from Git)
+```
+
+## Quick Start
+
+### 1. Environment Setup
+
+```r
+# Install required packages
+packages <- c("readxl", "dplyr", "tidyr", "stringr", "parallel",
+              "stm", "ggplot2", "wordcloud", "reticulate")
+install.packages(packages)
+
+# Python environment (Kiwipiepy)
+pip install kiwipiepy
+```
+
+### 2. Data Preparation
+
+```bash
+# Copy KCI or RISS Excel files to data/raw_data/ folder
+```
+
+### 3. Run Full Pipeline
+
+**Important**: Execute from the scripts directory.
+
+```r
+source("scripts/00_run_pipeline.R")
+run_morpheme_analysis_pipeline(steps = 1:5, auto_mode = TRUE)
+```
+
+#### Running Individual Scripts
+
+```r
+# Step 1: Data Loading and Analysis
+source("scripts/01_data_loading_and_analysis.R")
+
+# Step 2: Morphological Analysis (Interactive)
+source("scripts/02_kiwipiepy_mopheme_analysis.R")
+
+# Step 3: N-gram Analysis
+source("scripts/03-1_ngram_analysis.R")
+
+# User Dictionary Creation
+source("scripts/03-3_create_user_dict.R")
+
+# DTM Creation
+source("scripts/04_quanteda_dtm_creation.R")
+
+# Topic Modeling
+source("scripts/05_stm_topic_modeling.R")
+```
+
+## Key Features
+
+### Multi-source Data Compatibility
+
+- **KCI**: Based on unique paper IDs
+- **RISS**: Automatic hash-based unique ID generation
+- **Unified Pipeline**: Process both data sources seamlessly
+
+### Intelligent Dictionary Management
+
+- **N-gram Based**: Automatic compound noun discovery
+- **Frequency Filtering**: Select only meaningful terms
+- **User Review**: Manual review before dictionary registration
+
+### Compound Word Normalization
+
+Compound word mappings are managed in the `data/config/compound_mappings.csv` file:
+
+```csv
+pattern,replacement,description
+비자살적 자해,비자살적자해,Compound noun normalization
+로지스틱 회귀,로지스틱회귀,Statistical term normalization
+매개 효과,매개효과,Research methodology term
+```
+
+**Features**:
+- **Flexible Management**: Add/remove mappings by editing CSV file
+- **Auto-loading**: Automatically applied during DTM creation
+- **Fallback Support**: Use default mappings if file is missing
+
+### Package Management
+
+Centralized package management system is provided:
+
+```r
+# Package management functions in 00_utils.R
+source("scripts/00_utils.R")
+
+# Batch install and load multiple packages
+packages <- c("dplyr", "ggplot2", "stringr")
+ensure_packages(packages)
+
+# Install package with automatic mirror fallback
+install_with_fallback("stm")
+```
+
+**Features**:
+- Automatic CRAN mirror fallback (4 mirrors)
+- Installation success/failure status report
+- Integrated error handling
+
+## Contributing
+
+### Collaboration Welcome
+
+**We welcome contributions, extensions, and research collaborations!**
+
+Areas of interest:
+
+- **Educational Research**: Large-scale text analysis related to education policy and systems
+- **Text Mining Methodology**: Korean NLP, topic modeling, sentiment analysis, and general text mining techniques
+
+Collaboration opportunities:
+
+- **Research Collaboration**: Joint research projects and academic paper writing
+- **Feature Development**: New analysis techniques or performance improvements
+- **Extension Modules**: Implementation of additional text mining methodologies
+
+Contact:
+
+- Email: rubato103@dodaseo.cc
+
+## Citation
+
+**Important**: Please cite this repository if you use this code.
+
+### Citing This Pipeline
+
+```
+Yang, Y. (2025). Text Mining of Korean Academic Data using R. GitHub Repository. https://github.com/rubato103/textmining_KCI_RISS
+```
+
+```
+양연동. (2025). R을 이용한 한국어 학술데이터 텍스트마이닝. GitHub Repository. https://github.com/rubato103/textmining_KCI_RISS
+```
+
+### Citing Kiwi Morphological Analyzer (Required)
+
+```
+Lee, M. (2024). Kiwi: Implementation of Korean Morphological Analyzer using Statistical Language Model and Skip-Bigram.
+Korean Journal of Digital Humanities, 1(1), 109-136. https://doi.org/10.23287/KJDH.2024.1.1.6
+```
+
+**Detailed citation guide**: [CITATION.md](CITATION.md)
+
+## License
+
+This project follows an **Academic and Educational Use License**.
+
+### Permitted Uses
+
+- **Academic research** and paper publications
+- **Educational purposes** (universities, schools, etc.)
+- **Non-profit research** activities
+- **Personal learning** and research
+
+### Prohibited Uses
+
+- **Commercial use** (consulting, analysis services, etc.)
+- **Revenue generation** purposes
+- **Incorporation into corporate products/services**
+
+### Log Files
+
+Detailed logs of the analysis process are available in step-by-step reports in the `reports/` folder.
