@@ -52,7 +52,9 @@ textming_KCI_RISS/
 ├── data/
 │   ├── raw_data/            # 원본 Excel 데이터 (Git 추적 제외)
 │   ├── processed/           # 처리된 결과 (Git 추적 제외)
-│   └── dictionaries/        # 사용자 사전 (Git 추적 제외)
+│   ├── dictionaries/        # 사용자 사전 (Git 추적 제외)
+│   └── config/              # 설정 파일 (버전 관리 포함)
+│       └── compound_mappings.csv  # 복합어 정규화 매핑
 ├── reports/                 # 분석 보고서 (Git 추적 제외)
 ├── CITATION.md              # 인용 가이드
 ├── LICENSE                  # 라이선스 정보
@@ -104,7 +106,7 @@ source("scripts/03-1_ngram_analysis.R")
 source("scripts/03-3_create_user_dict.R")
 
 # DTM 생성
-source("scripts/04_dtm_creation_interactive.R")
+source("scripts/04_quanteda_dtm_creation.R")
 
 # 토픽 모델링
 source("scripts/05_stm_topic_modeling.R")
@@ -124,6 +126,42 @@ source("scripts/05_stm_topic_modeling.R")
 - **N그램 기반**: 복합명사 자동 발견
 - **빈도 필터링**: 의미 있는 용어만 선별
 - **사용자 검토**: 수동 검토 후 사전 등록
+
+### 복합어 정규화 설정
+
+복합어 매핑은 `data/config/compound_mappings.csv` 파일에서 관리됩니다:
+
+```csv
+pattern,replacement,description
+비자살적 자해,비자살적자해,복합명사 정규화
+로지스틱 회귀,로지스틱회귀,통계 용어 정규화
+매개 효과,매개효과,연구 방법론 용어
+```
+
+- **유연한 관리**: CSV 파일 수정으로 매핑 추가/제거 가능
+- **자동 로드**: DTM 생성 시 자동으로 적용
+- **폴백 지원**: 파일이 없을 경우 기본 매핑 사용
+
+### 패키지 관리
+
+중앙 집중식 패키지 관리 시스템이 제공됩니다:
+
+```r
+# 00_utils.R에 포함된 패키지 관리 함수
+source("scripts/00_utils.R")
+
+# 여러 패키지 일괄 설치 및 로드
+packages <- c("dplyr", "ggplot2", "stringr")
+ensure_packages(packages)
+
+# 미러 자동 전환 패키지 설치
+install_with_fallback("stm")
+```
+
+**특징**:
+- CRAN 미러 자동 폴백 (4개 미러)
+- 설치 성공/실패 상태 리포트
+- 통합된 에러 처리
 
 
 ## 기여하기

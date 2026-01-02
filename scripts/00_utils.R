@@ -2,6 +2,74 @@
 # 데이터 처리를 위한 유틸리티 함수들
 # 작성일: 2025-01-09
 
+# ========== 패키지 관리 함수 ==========
+
+# CRAN 미러 목록 (우선순위 순)
+CRAN_MIRRORS <- c(
+  "https://cran.rstudio.com/",           # RStudio 공식 (전세계)
+  "https://cloud.r-project.org/",        # R 공식 클라우드
+  "https://cran.seoul.go.kr/",           # 서울시 (한국)
+  "https://cran.r-project.org/"          # R 공식 (기본)
+)
+
+#' 패키지 설치 함수 (미러 자동 전환)
+#'
+#' @param pkg_name 설치할 패키지 이름
+#' @param mirrors CRAN 미러 목록 (기본값: CRAN_MIRRORS)
+#' @return 설치 성공 여부 (TRUE/FALSE)
+install_with_fallback <- function(pkg_name, mirrors = CRAN_MIRRORS) {
+  for (mirror in mirrors) {
+    tryCatch({
+      cat(sprintf("시도 중인 미러: %s\n", mirror))
+      install.packages(pkg_name, repos = mirror, quiet = TRUE)
+      cat(sprintf("✅ %s 설치 완료\n", pkg_name))
+      return(TRUE)
+    }, error = function(e) {
+      cat(sprintf("❌ 미러 %s 실패: %s\n", mirror, conditionMessage(e)))
+    })
+  }
+  warning(sprintf("모든 CRAN 미러에서 %s 설치 실패", pkg_name))
+  return(FALSE)
+}
+
+#' 패키지 일괄 확인 및 설치
+#'
+#' @param packages 패키지 이름 벡터
+#' @param mirrors CRAN 미러 목록 (기본값: CRAN_MIRRORS)
+#' @return 설치된 패키지 상태 리스트
+ensure_packages <- function(packages, mirrors = CRAN_MIRRORS) {
+  cat(sprintf("📦 패키지 확인 중... (총 %d개)\n", length(packages)))
+
+  installation_status <- list()
+
+  for (pkg in packages) {
+    if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+      cat(sprintf("📥 %s 패키지 설치 중...\n", pkg))
+      success <- install_with_fallback(pkg, mirrors)
+
+      if (success) {
+        library(pkg, character.only = TRUE)
+        installation_status[[pkg]] <- "installed"
+      } else {
+        installation_status[[pkg]] <- "failed"
+      }
+    } else {
+      cat(sprintf("✓ %s 이미 설치됨\n", pkg))
+      installation_status[[pkg]] <- "already_installed"
+    }
+  }
+
+  # 실패한 패키지 요약
+  failed_packages <- names(installation_status)[installation_status == "failed"]
+  if (length(failed_packages) > 0) {
+    warning(sprintf("다음 패키지 설치 실패: %s", paste(failed_packages, collapse = ", ")))
+  }
+
+  cat("✅ 패키지 확인 완료\n\n")
+
+  return(installation_status)
+}
+
 # ========== 데이터 표준화 함수 ==========
 
 # 해시 기반 doc_id 생성 함수 (숫자 ID 생성)
@@ -532,6 +600,10 @@ summarize_data_structure <- function(data) {
 
 cat("✅ utils.R 로드 완료\n")
 cat("사용 가능한 함수:\n")
+cat("  [패키지 관리]\n")
+cat("  - ensure_packages(): 패키지 일괄 확인 및 설치\n")
+cat("  - install_with_fallback(): 미러 자동 전환 패키지 설치\n")
+cat("  [데이터 처리]\n")
 cat("  - standardize_data(): 데이터 표준화\n")
 cat("  - get_latest_file(): 최신 파일 찾기\n")
 cat("  - save_with_metadata(): 메타데이터와 함께 저장\n")

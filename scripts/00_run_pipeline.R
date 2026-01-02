@@ -99,15 +99,15 @@ run_morpheme_analysis_pipeline <- function(
     if (4 %in% steps) {
       cat("========== 4단계: DTM 생성 ==========\n")
       step4_start <- Sys.time()
-      
+
       if (auto_mode) {
         # 자동 모드에서는 기본 DTM 설정 사용
         Sys.setenv(DTM_AUTO_FILTER = "TRUE")
         Sys.setenv(MIN_TERM_FREQ = "2")
       }
-      
-      source("scripts/04_dtm_creation_interactive.R", local = TRUE)
-      
+
+      source("scripts/04_quanteda_dtm_creation.R", local = TRUE)
+
       step4_end <- Sys.time()
       results$step4 <- list(
         status = "completed",

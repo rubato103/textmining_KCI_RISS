@@ -173,7 +173,23 @@ if (missing_nouns > 0) {
 # ========== 복합어 정규화 ==========
 cat("\n🔧 복합어 정규화 적용 중...\n")
 
-normalize_compounds <- function(text) {
+# 복합어 매핑 파일 로드
+compound_mappings_file <- "data/config/compound_mappings.csv"
+
+if (file.exists(compound_mappings_file)) {
+  cat(sprintf("📄 복합어 매핑 파일 로드: %s\n", compound_mappings_file))
+  compound_mappings_df <- read.csv(compound_mappings_file, stringsAsFactors = FALSE, fileEncoding = "UTF-8")
+
+  # 리스트 형태로 변환
+  mappings <- setNames(
+    as.list(compound_mappings_df$replacement),
+    compound_mappings_df$pattern
+  )
+
+  cat(sprintf("✅ %d개의 복합어 매핑 로드 완료\n", nrow(compound_mappings_df)))
+} else {
+  cat("⚠️ 복합어 매핑 파일을 찾을 수 없습니다. 기본 매핑을 사용합니다.\n")
+  # 기본 매핑 (폴백)
   mappings <- list(
     "비자살적 자해" = "비자살적자해",
     "로지스틱 회귀" = "로지스틱회귀",
@@ -185,7 +201,10 @@ normalize_compounds <- function(text) {
     "설문 조사" = "설문조사",
     "실태 조사" = "실태조사"
   )
-  
+}
+
+# 복합어 정규화 함수
+normalize_compounds <- function(text, mappings) {
   for (pattern in names(mappings)) {
     replacement <- mappings[[pattern]]
     text <- gsub(pattern, replacement, text, fixed = TRUE)
@@ -193,7 +212,7 @@ normalize_compounds <- function(text) {
   return(text)
 }
 
-combined_df$noun_extraction_normalized <- sapply(combined_df$noun_extraction, normalize_compounds)
+combined_df$noun_extraction_normalized <- sapply(combined_df$noun_extraction, function(x) normalize_compounds(x, mappings))
 
 # ========== quanteda Corpus 생성 ==========
 cat("\n📚 quanteda Corpus 생성 중...\n")
