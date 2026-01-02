@@ -63,11 +63,26 @@ textming_KCI_RISS/
 
 ## 빠른 시작
 
-### 1. 환경 설정
+### 1. 자동 설정 (권장)
+
+프로젝트 루트 디렉토리에서 setup 스크립트를 실행하세요:
+
+```r
+source("setup.R")
+```
+
+setup.R 스크립트는 다음을 자동으로 수행합니다:
+- 필수 R 패키지 설치
+- Python 환경 확인
+- Kiwipiepy 설치
+- 프로젝트 디렉토리 구조 생성
+- 설정 파일 확인
+
+### 1-1. 수동 설정
 
 ```r
 # 필수 패키지 설치
-packages <- c("readxl", "dplyr", "tidyr", "stringr", "parallel", 
+packages <- c("readxl", "dplyr", "tidyr", "stringr", "parallel",
               "stm", "ggplot2", "wordcloud", "reticulate")
 install.packages(packages)
 
@@ -298,7 +313,22 @@ textming_KCI_RISS/
 
 ## Quick Start
 
-### 1. Environment Setup
+### 1. Automated Setup (Recommended)
+
+Run the setup script from the project root directory:
+
+```r
+source("setup.R")
+```
+
+The setup.R script automatically performs the following:
+- Install required R packages
+- Verify Python environment
+- Install Kiwipiepy
+- Create project directory structure
+- Verify configuration files
+
+### 1-1. Manual Setup
 
 ```r
 # Install required packages

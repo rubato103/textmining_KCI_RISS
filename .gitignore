@@ -54,12 +54,11 @@ claude.md
 *.log
 
 # ========== 기타 임시 파일 ==========
-# 테스트 스크립트들
+# 임시 테스트 스크립트들
 fix_duplicate_docids.R
 generate_hash_docids.R
 check_metadata_preservation.R
 debug_*.R
-test_*.R
 
 # 임시 분석 파일들
 *.tmp
@@ -68,3 +67,9 @@ temp_*
 # JSON 분석 결과
 *.json
 .Rproj.user
+
+# ========== 테스트 결과 ==========
+# testthat 캐시 파일 (실제 테스트 코드는 포함)
+tests/testthat/_snaps/
+tests/testthat/*.Rout
+tests/testthat/*.Rout.save
