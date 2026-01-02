@@ -3,7 +3,11 @@
 
 # ========== 데이터 파일 제외 ==========
 # 전체 데이터 폴더 제외 (원본 데이터 및 분석 결과 모두 포함)
-data/
+data/*
+
+# 설정 파일은 포함 (버전 관리 필요)
+!data/config/
+!data/config/*.csv
 
 # 백업 결과 폴더 제외 (분석 결과 백업)
 backup_results/
@@ -46,16 +50,20 @@ claude.md
 # RStudio
 *.Rproj
 
+# renv (if used)
+renv/library/
+renv/staging/
+renv/.gitignore
+
 # ========== 로그 파일 ==========
 *.log
 
 # ========== 기타 임시 파일 ==========
-# 테스트 스크립트들
+# 임시 테스트 스크립트들
 fix_duplicate_docids.R
 generate_hash_docids.R
 check_metadata_preservation.R
 debug_*.R
-test_*.R
 
 # 임시 분석 파일들
 *.tmp
@@ -64,3 +72,9 @@ temp_*
 # JSON 분석 결과
 *.json
 .Rproj.user
+
+# ========== 테스트 결과 ==========
+# testthat 캐시 파일 (실제 테스트 코드는 포함)
+tests/testthat/_snaps/
+tests/testthat/*.Rout
+tests/testthat/*.Rout.save

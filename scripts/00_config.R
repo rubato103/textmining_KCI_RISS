@@ -107,17 +107,17 @@ PROJECT_CONFIG <- list(
 override_from_env <- function() {
   # 병렬 처리 코어 수
   if (Sys.getenv("MORPHEME_CORES") != "") {
-    PROJECT_CONFIG$morpheme_analysis$parallel_cores <<- as.numeric(Sys.getenv("MORPHEME_CORES") )
+    PROJECT_CONFIG$morpheme_analysis$parallel_cores <<- as.numeric(Sys.getenv("MORPHEME_CORES"))
   }
-  
+
   # 대화형 모드
   if (Sys.getenv("INTERACTIVE_MODE") != "") {
-    PROJECT_CONFIG$defaults$interactive_mode <<- as.logical(Sys.getenv("INTERACTIVE_MODE") )
+    PROJECT_CONFIG$defaults$interactive_mode <<- as.logical(Sys.getenv("INTERACTIVE_MODE"))
   }
-  
+
   # 사용자 사전 사용
   if (Sys.getenv("USE_USER_DICT") != "") {
-    PROJECT_CONFIG$morpheme_analysis$use_user_dict <<- as.logical(Sys.getenv("USE_USER_DICT") )
+    PROJECT_CONFIG$morpheme_analysis$use_user_dict <<- as.logical(Sys.getenv("USE_USER_DICT"))
   }
 }
 

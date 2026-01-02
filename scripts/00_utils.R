@@ -2,9 +2,95 @@
 # 데이터 처리를 위한 유틸리티 함수들
 # 작성일: 2025-01-09
 
+# ========== 패키지 관리 함수 ==========
+
+# CRAN 미러 목록 (우선순위 순)
+CRAN_MIRRORS <- c(
+  "https://cran.rstudio.com/",           # RStudio 공식 (전세계)
+  "https://cloud.r-project.org/",        # R 공식 클라우드
+  "https://cran.seoul.go.kr/",           # 서울시 (한국)
+  "https://cran.r-project.org/"          # R 공식 (기본)
+)
+
+#' 패키지 설치 함수 (미러 자동 전환)
+#'
+#' @param pkg_name 설치할 패키지 이름
+#' @param mirrors CRAN 미러 목록 (기본값: CRAN_MIRRORS)
+#' @return 설치 성공 여부 (TRUE/FALSE)
+install_with_fallback <- function(pkg_name, mirrors = CRAN_MIRRORS) {
+  for (mirror in mirrors) {
+    tryCatch({
+      cat(sprintf("시도 중인 미러: %s\n", mirror))
+      install.packages(pkg_name, repos = mirror, quiet = TRUE)
+      cat(sprintf("✅ %s 설치 완료\n", pkg_name))
+      return(TRUE)
+    }, error = function(e) {
+      cat(sprintf("❌ 미러 %s 실패: %s\n", mirror, conditionMessage(e)))
+    })
+  }
+  warning(sprintf("모든 CRAN 미러에서 %s 설치 실패", pkg_name))
+  return(FALSE)
+}
+
+#' 패키지 일괄 확인 및 설치
+#'
+#' @param packages 패키지 이름 벡터
+#' @param mirrors CRAN 미러 목록 (기본값: CRAN_MIRRORS)
+#' @return 설치된 패키지 상태 리스트
+ensure_packages <- function(packages, mirrors = CRAN_MIRRORS) {
+  cat(sprintf("📦 패키지 확인 중... (총 %d개)\n", length(packages)))
+
+  installation_status <- list()
+
+  for (pkg in packages) {
+    if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+      cat(sprintf("📥 %s 패키지 설치 중...\n", pkg))
+      success <- install_with_fallback(pkg, mirrors)
+
+      if (success) {
+        library(pkg, character.only = TRUE)
+        installation_status[[pkg]] <- "installed"
+      } else {
+        installation_status[[pkg]] <- "failed"
+      }
+    } else {
+      cat(sprintf("✓ %s 이미 설치됨\n", pkg))
+      installation_status[[pkg]] <- "already_installed"
+    }
+  }
+
+  # 실패한 패키지 요약
+  failed_packages <- names(installation_status)[installation_status == "failed"]
+  if (length(failed_packages) > 0) {
+    warning(sprintf("다음 패키지 설치 실패: %s", paste(failed_packages, collapse = ", ")))
+  }
+
+  cat("✅ 패키지 확인 완료\n\n")
+
+  return(installation_status)
+}
+
 # ========== 데이터 표준화 함수 ==========
 
-# 해시 기반 doc_id 생성 함수 (숫자 ID 생성)
+#' 해시 기반 문서 ID 생성
+#'
+#' 데이터프레임의 제목, 저자, 기관 정보를 조합하여 MD5 해시 기반의
+#' 고유한 문서 ID를 생성합니다. RISS 데이터와 같이 고유 ID가 없는
+#' 경우 사용됩니다.
+#'
+#' @param data 데이터프레임 (제목, 저자, 기관 컬럼 포함)
+#' @return 문자형 벡터 ("doc" + 8자리 숫자)
+#' @details
+#' - 제목, 저자, 기관 컬럼을 자동으로 감지
+#' - MD5 해시의 앞 8자리를 10진수로 변환
+#' - "doc" 접두사 + 8자리 숫자 형식 (예: doc12345678)
+#' - 중복 발생 시 행 번호를 추가하여 고유성 보장
+#' @examples
+#' \dontrun{
+#' data <- data.frame(제목 = c("논문1", "논문2"), 저자 = c("저자1", "저자2"))
+#' ids <- generate_hash_id(data)
+#' }
+#' @export
 generate_hash_id <- function(data) {
   # 식별용 컬럼명 패턴들 (우선순위 순)
   title_patterns <- c("제목", "논문제목", "제목명", "title", "Title")
@@ -74,9 +160,10 @@ generate_hash_id <- function(data) {
   }
   
   # MD5 해시 생성 후 숫자로 변환
+  # digest 패키지 확인 및 로드
   if (!require("digest", quietly = TRUE)) {
-    install.packages("digest", repos = "https://cran.seoul.go.kr/")
-    library(digest)
+    cat("📦 digest 패키지가 필요합니다. 설치 중...\n")
+    ensure_packages("digest")
   }
   
   # 해시 생성 후 16진수를 10진수로 변환하여 숫자 ID 생성
@@ -349,7 +436,28 @@ standardize_year_column <- function(data) {
   return(data)
 }
 
-# 전체 데이터 표준화 함수
+#' 데이터 표준화
+#'
+#' KCI 및 RISS 엑셀 데이터를 파이프라인에서 사용 가능한
+#' 표준 형식으로 변환합니다. ID, 텍스트(초록), 연도 컬럼을
+#' 자동으로 감지하고 표준화합니다.
+#'
+#' @param data 원본 데이터프레임
+#' @param verbose 로그 출력 여부 (기본값: TRUE)
+#' @return 표준화된 데이터프레임 (doc_id, abstract, pub_year 컬럼 포함)
+#' @details
+#' 다음 작업을 순차적으로 수행합니다:
+#' 1. ID 컬럼 → doc_id로 표준화 (없으면 해시 기반 ID 생성)
+#' 2. 텍스트 컬럼 → abstract로 표준화 (한글 비율 기반 자동 선택)
+#' 3. 연도 컬럼 → pub_year로 표준화 (4자리 숫자 추출)
+#' 4. doc_id를 첫 번째 컬럼으로 이동
+#'
+#' @examples
+#' \dontrun{
+#' raw_data <- read_excel("kci_data.xlsx")
+#' standardized_data <- standardize_data(raw_data)
+#' }
+#' @export
 standardize_data <- function(data, verbose = TRUE) {
   if (verbose) {
     cat("\n========== 데이터 표준화 시작 ==========\n")
@@ -467,7 +575,25 @@ check_required_columns <- function(data, required_cols) {
   return(TRUE)
 }
 
-# 데이터 무결성 검증
+#' 데이터 무결성 검증
+#'
+#' 데이터프레임의 무결성을 검증합니다. 기본 검증, 형태소 분석 결과 검증,
+#' 메타데이터 검증 등 다양한 검증 타입을 지원합니다.
+#'
+#' @param data 검증할 데이터프레임
+#' @param check_type 검증 타입 ("basic", "morpheme", "metadata")
+#' @return 모든 검증 통과 시 TRUE, 실패 시 FALSE
+#' @details
+#' 검증 항목:
+#' - basic: 행/열 존재, doc_id 컬럼 존재, ID 중복 확인
+#' - morpheme: basic + noun_extraction 컬럼 존재
+#' - metadata: basic + 메타데이터 필수 컬럼 확인
+#'
+#' @examples
+#' \dontrun{
+#' is_valid <- validate_data(my_data, check_type = "basic")
+#' }
+#' @export
 validate_data <- function(data, check_type = "basic") {
   cat("\n========== 데이터 검증 ==========\n")
   
@@ -532,6 +658,10 @@ summarize_data_structure <- function(data) {
 
 cat("✅ utils.R 로드 완료\n")
 cat("사용 가능한 함수:\n")
+cat("  [패키지 관리]\n")
+cat("  - ensure_packages(): 패키지 일괄 확인 및 설치\n")
+cat("  - install_with_fallback(): 미러 자동 전환 패키지 설치\n")
+cat("  [데이터 처리]\n")
 cat("  - standardize_data(): 데이터 표준화\n")
 cat("  - get_latest_file(): 최신 파일 찾기\n")
 cat("  - save_with_metadata(): 메타데이터와 함께 저장\n")

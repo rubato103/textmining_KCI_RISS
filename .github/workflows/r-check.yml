@@ -1,0 +1,96 @@
+name: R Scripts Check
+
+on:
+  push:
+    branches: [ main, develop, 'claude/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (R-${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: macOS-latest, r: 'release'}
+          - {os: windows-latest, r: 'release'}
+
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install kiwipiepy
+
+      - name: Install R dependencies
+        run: |
+          install.packages(c("readxl", "dplyr", "tidyr", "stringr", "reticulate",
+                             "quanteda", "stm", "tm", "SnowballC", "tidytext",
+                             "ggplot2", "wordcloud", "wordcloud2", "RColorBrewer",
+                             "htmlwidgets", "parallel", "furrr", "digest", "jsonlite",
+                             "testthat"))
+        shell: Rscript {0}
+
+      - name: Verify R script syntax
+        run: |
+          Rscript -e '
+          scripts <- list.files("scripts", pattern = "\\.R$", full.names = TRUE)
+          errors <- character()
+
+          for (script in scripts) {
+            result <- tryCatch({
+              parse(script)
+              TRUE
+            }, error = function(e) {
+              errors <<- c(errors, paste0(script, ": ", e$message))
+              FALSE
+            })
+          }
+
+          if (length(errors) > 0) {
+            cat("Syntax errors found:\n")
+            cat(paste(errors, collapse = "\n"), "\n")
+            quit(status = 1)
+          } else {
+            cat("All scripts have valid syntax\n")
+          }
+          '
+
+      - name: Run tests
+        if: always()
+        run: |
+          Rscript -e 'testthat::test_dir("tests/testthat")'
+
+      - name: Test coverage
+        if: runner.os == 'Linux' && matrix.config.r == 'release'
+        run: |
+          Rscript -e '
+          if (!requireNamespace("covr", quietly = TRUE)) {
+            install.packages("covr")
+          }
+          covr::package_coverage(type = "tests", line_exclusions = list("scripts" = 1:9999))
+          '
+        continue-on-error: true
